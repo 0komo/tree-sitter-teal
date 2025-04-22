@@ -1,0 +1,72 @@
+{
+  "nodes": {
+    "flakelight": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1745239464,
+        "narHash": "sha256-f9FrZUTNyZ8RBz2syUn3vbVjKoM7Bs4nHlj7Q1/Fu/I=",
+        "owner": "nix-community",
+        "repo": "flakelight",
+        "rev": "f6e77f2219f3af0831a9c2079b4b452a23531b46",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "flakelight",
+        "type": "github"
+      }
+    },
+    "nix2tree-sitter": {
+      "inputs": {
+        "flakelight": [
+          "flakelight"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1745329692,
+        "narHash": "sha256-JLrE3Uje4D9ii7q78ik3q1hGwZPoE2+afmakyXUNeGs=",
+        "owner": "0komo",
+        "repo": "nix2tree-sitter",
+        "rev": "e99569035d87cb2df5dbd35d35e5dd0e04ea1e43",
+        "type": "github"
+      },
+      "original": {
+        "owner": "0komo",
+        "repo": "nix2tree-sitter",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1744932701,
+        "narHash": "sha256-fusHbZCyv126cyArUwwKrLdCkgVAIaa/fQJYFlCEqiU=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "b024ced1aac25639f8ca8fdfc2f8c4fbd66c48ef",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flakelight": "flakelight",
+        "nix2tree-sitter": "nix2tree-sitter",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

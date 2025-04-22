@@ -1,0 +1,38 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "teal",
+      "camelcase": "Teal",
+      "title": "Teal",
+      "scope": "source.teal",
+      "file-types": [
+        "tl"
+      ],
+      "injection-regex": "^teal$",
+      "class-name": "TreeSitterTeal"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "tree-sitter grammar for Teal",
+    "authors": [
+      {
+        "name": "Komo"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/0komo/tree-sitter-teal"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
+  "name": "teal",
+  "conflicts": [],
+  "externals": [],
+  "extras": [
+    {
+      "type": "PATTERN",
+      "value": "\\s"
+    }
+  ],
+  "inline": [],
+  "precedences": [],
+  "reserved": {},
+  "rules": {
+    "root": {
+      "type": "PATTERN",
+      "value": ".+"
+    }
+  },
+  "supertypes": []
+}
