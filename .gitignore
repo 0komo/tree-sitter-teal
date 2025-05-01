@@ -1,4 +1,9 @@
 /.direnv
+/build
+/.ccls-cache
+/compile_commands.json
+
+*.wasm
 
 # Prerequisites
 *.d

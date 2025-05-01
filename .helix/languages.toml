@@ -1,0 +1,10 @@
+[language-server.ccls]
+command = "ccls"
+
+[[language]]
+name = "c"
+language-servers = [ "ccls" ]
+
+[[language]]
+name = "nix"
+formatter = { command = "nixfmt", args = [] }

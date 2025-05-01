@@ -9,12 +9,7 @@
   },
   "main": "bindings/node",
   "types": "bindings/node",
-  "keywords": [
-    "incremental",
-    "parsing",
-    "tree-sitter",
-    "teal"
-  ],
+  "keywords": ["incremental", "parsing", "tree-sitter", "teal"],
   "files": [
     "grammar.js",
     "tree-sitter.json",

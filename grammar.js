@@ -6,14 +6,15 @@ const [cmd, ...args] = [
   "eval",
   "--raw",
   ".#tree-sitter-grammar",
+  "--show-trace",
 ];
 
-const { error, stdout, status } = spawnSync(cmd, args, {
+const { stdout, status } = spawnSync(cmd, args, {
   stdio: ["ignore", "pipe", "inherit"],
 });
 
 if (status !== 0) {
-  throw Error(`command failed: ${error.message}`);
+  throw Error(`command failed: exit code ${status}`);
 }
 
 module.exports = {

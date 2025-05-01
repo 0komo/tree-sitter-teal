@@ -16,21 +16,45 @@
     };
   };
 
-  outputs = { self, flakelight, nix2tree-sitter, ... }@inputs:
-    flakelight ./. ({ lib, ... }: {
-      inherit inputs;
-      devShell = {
-        stdenv = lib.mkForce (pkgs: pkgs.stdenv);
-        packages = pkgs: with pkgs; [
-          nix
-          tree-sitter
-          nodejs_20
-        ];
-        env = pkgs: {
-          TREE_SITTER_JS_RUNTIME = lib.getExe pkgs.nodejs_20;
+  outputs =
+    {
+      self,
+      flakelight,
+      nix2tree-sitter,
+      ...
+    }@inputs:
+    flakelight ./. (
+      { lib, ... }:
+      {
+        inherit inputs;
+        devShell = {
+          stdenv = lib.mkForce (pkgs: pkgs.clangStdenv);
+          packages =
+            pkgs: with pkgs; [
+              nix
+              (tree-sitter.override {
+                webUISupport = true;
+              })
+              nodejs_20
+              sigi
+              ccls
+              nixfmt-rfc-style
+              nushell
+              bear
+            ];
+          env = pkgs: {
+            SIGI_HOME = "./.sigi";
+            TREE_SITTER_JS_RUNTIME = lib.getExe pkgs.nodejs_20;
+          };
         };
-      };
 
-      outputs.tree-sitter-grammar = import ./grammar.nix nix2tree-sitter.lib;
-    });
+        formatters =
+          pkgs: with pkgs; {
+            "*.nix" = "${lib.getExe nixfmt-rfc-style}";
+            "*.json" = "${lib.getExe biome} format --write --use-editorconfig=true";
+          };
+
+        outputs.tree-sitter-grammar = import ./grammar.nix nix2tree-sitter.lib;
+      }
+    );
 }

@@ -6,10 +6,9 @@
       "camelcase": "Teal",
       "title": "Teal",
       "scope": "source.teal",
-      "file-types": [
-        "tl"
-      ],
+      "file-types": ["tl"],
       "injection-regex": "^teal$",
+      "external-files": ["./grammar.nix", "./flake.lock"],
       "class-name": "TreeSitterTeal"
     }
   ],
