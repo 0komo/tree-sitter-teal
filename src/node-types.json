@@ -249,12 +249,26 @@
           }
         ]
       },
+      "end": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "]]",
+            "named": false
+          }
+        ]
+      },
       "start": {
         "multiple": false,
         "required": true,
         "types": [
           {
             "type": "--",
+            "named": false
+          },
+          {
+            "type": "--[[",
             "named": false
           }
         ]
@@ -1188,6 +1202,10 @@
           {
             "type": "'",
             "named": false
+          },
+          {
+            "type": "]]",
+            "named": false
           }
         ]
       },
@@ -1201,6 +1219,10 @@
           },
           {
             "type": "'",
+            "named": false
+          },
+          {
+            "type": "[[",
             "named": false
           }
         ]
@@ -1848,85 +1870,40 @@
   {
     "type": "union_type",
     "named": true,
-    "fields": {
-      "lhs": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "array_type",
-            "named": true
-          },
-          {
-            "type": "function_type",
-            "named": true
-          },
-          {
-            "type": "grouped_type",
-            "named": true
-          },
-          {
-            "type": "map_type",
-            "named": true
-          },
-          {
-            "type": "simple_type",
-            "named": true
-          },
-          {
-            "type": "tuple_type",
-            "named": true
-          },
-          {
-            "type": "union_type",
-            "named": true
-          }
-        ]
-      },
-      "rhs": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "array_type",
-            "named": true
-          },
-          {
-            "type": "function_type",
-            "named": true
-          },
-          {
-            "type": "grouped_type",
-            "named": true
-          },
-          {
-            "type": "map_type",
-            "named": true
-          },
-          {
-            "type": "simple_type",
-            "named": true
-          },
-          {
-            "type": "tuple_type",
-            "named": true
-          },
-          {
-            "type": "union_type",
-            "named": true
-          }
-        ]
-      },
-      "separator": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "|",
-            "named": false
-          }
-        ]
-      }
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "array_type",
+          "named": true
+        },
+        {
+          "type": "function_type",
+          "named": true
+        },
+        {
+          "type": "grouped_type",
+          "named": true
+        },
+        {
+          "type": "map_type",
+          "named": true
+        },
+        {
+          "type": "simple_type",
+          "named": true
+        },
+        {
+          "type": "tuple_type",
+          "named": true
+        },
+        {
+          "type": "union_type",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -2095,6 +2072,10 @@
     "named": false
   },
   {
+    "type": "--[[",
+    "named": false
+  },
+  {
     "type": ".",
     "named": false
   },
@@ -2163,7 +2144,15 @@
     "named": false
   },
   {
+    "type": "[[",
+    "named": false
+  },
+  {
     "type": "]",
+    "named": false
+  },
+  {
+    "type": "]]",
     "named": false
   },
   {

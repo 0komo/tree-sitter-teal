@@ -37,16 +37,32 @@ def "main playground" [
   checks --compiles-to-wasm
   tree-sitter generate
   tree-sitter build --wasm
-  tree-sitter playground (
-    if (not $open_browser) {
-      "-q"
-    } else {
-      "--"
+
+  let id = job spawn {
+    tree-sitter playground (
+      if (not $open_browser) {
+        "-q"
+      } else {
+        "--"
+      }
+    )
+  }
+  let paths = [grammar.nix src/scanner.c] | path expand
+
+  try {
+    watch . { |_, path|
+      if ($path in $paths) {
+        print "Rebuilding..."
+        tree-sitter generate
+        tree-sitter build --wasm
+      }
     }
-  )
+  } catch {||}
+
+  job kill $id
 }
 
-def "main generate-compilation-db" [] {
+def "main gen-compilation-db" [] {
   checks --generate-db
   bear -- tree-sitter build
 }

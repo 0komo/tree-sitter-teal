@@ -16,6 +16,7 @@ let
     unary = prec.left 12;
     power = prec.right 13;
     as = prec.left 14;
+    union = prec.right 15;
   };
 
   one_or_more = x: repeat1 (seq x);
@@ -73,11 +74,13 @@ grammar {
 
     (rule "union_type" (
       s:
-      (prec.left 2 (seq [
-        (field "lhs" s._type)
-        (field "separator" "|")
-        (field "rhs" s._type)
-      ]))
+      PREC.union (seq [
+        s._type
+        (repeat1 (prec.right 0 (seq [
+          "|"
+          s._type
+        ])))
+      ])
     ))
 
     (rule "simple_type" (
@@ -129,9 +132,8 @@ grammar {
 
     (rule "function_type_param_list" (
       s:
-      let
-        vararg_param = s.function_type_param_vararg;
-        multi_param = seq [
+      choice [
+        (seq [
           s.function_type_param
           (zero_or_more [
             ","
@@ -141,11 +143,8 @@ grammar {
             ","
             s.function_type_param_vararg
           ])
-        ];
-      in
-      choice [
-        vararg_param
-        multi_param
+        ])
+        s.function_type_param_vararg
       ]
     ))
 
@@ -194,33 +193,25 @@ grammar {
 
     (rule "function_type_return_list" (
       s:
-      let
-        vararg_return = s.function_type_return_vararg;
-        multi_return = (
-          prec.right 0 (seq [
+      prec.right 0 (choice [
+        (seq [
+          s._type
+          (zero_or_more [
+            ","
             s._type
-            (repeat (
-              prec.right 0 (seq [
-                ","
-                s._type
-              ])
-            ))
-            (may_appear [
-              ","
-              s.function_type_return_vararg
-            ])
           ])
-        );
-      in
-      (prec.right 0 (choice [
-        vararg_return
-        multi_return
-      ]))
+          (may_appear [
+            ","
+            s.function_type_return_vararg
+          ])
+        ])
+        s.function_type_return_vararg
+      ])
     ))
 
     (rule "function_type_return_vararg" (
       s:
-      (seq [
+      prec 1 (seq [
         (field "type" s._type)
         (field "vararg" "...")
       ])
@@ -350,6 +341,54 @@ grammar {
       ]
     ))
 
+    (rule "function_param_list" (
+      s:
+      choice [
+        (seq [
+          s._function_param_name_list
+          (may_appear [
+            ","
+            s.function_param_vararg
+          ])
+        ])
+        s.function_param_vararg
+      ]
+    ))
+
+    (rule "_function_param_name_list" (
+      s:
+      seq [
+        s.function_param_name
+        (zero_or_more [
+          ","
+          s.function_param_name
+        ])
+      ]
+    ))
+
+    (rule "function_param_vararg" (
+      s:
+      seq [
+        (field "name" (alias "..." (s "vararg")))
+        (may_appear [
+          (field "type_separator" ":")
+          (field "type" s._type)
+        ])
+      ]
+    ))
+
+    (rule "function_param_name" (
+      s:
+      seq [
+        (field "name" s.identifier)
+        (field "optional" (optional "?"))
+        (may_appear [
+          (field "type_separator" ":")
+          (field "type" s._type)
+        ])
+      ]
+    ))
+
     (rule "function_call" (
       s:
       choice [
@@ -433,7 +472,7 @@ grammar {
         (field "end" "]")
       ]
     ))
-    
+
     (rule "_table_field_name_pair" (
       s:
       prec 1 (seq [
@@ -540,6 +579,15 @@ grammar {
       choice [
         s._single_quote_string
         s._double_quote_string
+        s._block_string
+      ]
+    ))
+    (rule "_block_string" (
+      s:
+      seq [
+        (field "start" (alias s._block_string_start "[["))
+        (field "content" (alias s._block_string_content (s "string_content")))
+        (field "end" (alias s._block_string_end "]]"))
       ]
     ))
     (rule "_double_quote_string" (
@@ -707,16 +755,15 @@ grammar {
           (field "start" "--")
           (field "content" (alias (R ''[^\r\n]*'') (s "comment_content")))
         ];
-        # ignore
-        block_comment = seq [
+        block_comment = prec 1 (seq [
           (field "start" (alias s._block_comment_start "--[["))
           (field "content" (alias s._block_comment_content (s "comment_content")))
           (field "end" (alias s._block_comment_end "]]"))
-        ];
+        ]);
       in
       choice [
         line_comment
-        # block_comment
+        block_comment
       ]
     ))
 
