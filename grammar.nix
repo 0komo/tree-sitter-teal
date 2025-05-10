@@ -22,6 +22,19 @@ let
   one_or_more = x: repeat1 (seq x);
   zero_or_more = x: repeat (seq x);
   may_appear = x: optional (seq x);
+
+  make_local =
+    x:
+    seq [
+      "local"
+      x
+    ];
+  make_global =
+    x:
+    seq [
+      "global"
+      x
+    ];
 in
 grammar {
   name = "teal";
@@ -41,7 +54,285 @@ grammar {
   conflicts = s: [
   ];
   rules = [
-    (rule "expression" (s: s._expression))
+    (rule "chunk" (s: optional s._block))
+
+    (rule "block" (s: s._block))
+    (rule "_block" (
+      s:
+      choice [
+        (seq [
+          s._statement
+          (optional s.return_statement)
+        ])
+        s.return_statement
+      ]
+    ))
+
+    (rule "_statement" (
+      s:
+      choice [
+        s.function_call
+        s.empty_statement
+        s.break_statement
+        s.goto_statement
+        s.goto_label
+        s.do_statement
+        s.global_type_statement
+        s.global_record_statement
+        s.global_enum_statement
+        s.local_type_statement
+        s.local_record_statement
+        s.local_enum_statement
+      ]
+    ))
+
+    (rule "global_enum_statement" (s: make_global s._enum_statement))
+    (rule "local_enum_statement" (s: make_local s._enum_statement))
+
+    (rule "_enum_statement" (
+      s:
+      seq [
+        "enum"
+        (field "name" s.identifier)
+        s._enum_body
+      ]
+    ))
+
+    (rule "global_record_statement" (s: make_global s._record_statement))
+    (rule "local_record_statement" (s: make_local s._record_statement))
+
+    (rule "_record_statement" (
+      s:
+      seq [
+        "record"
+        (field "name" s.identifier)
+        s._record_body
+      ]
+    ))
+
+    (rule "global_type_statement" (s: make_global s._type_statement))
+    (rule "local_type_statement" (s: make_local s._type_statement))
+
+    (rule "_type_statement" (
+      s:
+      seq [
+        "type"
+        (field "name" s.identifier)
+        (field "type_generic" (optional s.type_generic))
+        "="
+        (field "type" s._new_type)
+      ]
+    ))
+
+    (rule "_new_type" (
+      s:
+      choice [
+        s.record_type
+        s.enum_type
+        s.nominal_type
+        s.external_nominal_type
+      ]
+    ))
+
+    (rule "external_nominal_type" (
+      s:
+      seq [
+        "require"
+        "("
+        (field "module" s.string)
+        ")"
+        (may_appear [
+          "."
+          (field "type" s.nominal_type)
+        ])
+      ]
+    ))
+
+    (rule "record_type" (
+      s:
+      seq [
+        "record"
+        s._record_body
+      ]
+    ))
+
+    (rule "enum_type" (
+      s:
+      seq [
+        "enum"
+        s._enum_body
+      ]
+    ))
+
+    (rule "_record_body" (
+      s:
+      seq [
+        (field "type_generic" (optional s.type_generic))
+        (may_appear [
+          "is"
+          (field "interfaces" s.interface_list)
+        ])
+        (may_appear [
+          "where"
+          (field "where_exp" s._expression)
+        ])
+        (field "entries" (optional s.record_entries))
+        "end"
+      ]
+    ))
+
+    (rule "interface_list" (
+      s:
+      choice [
+        s._interface_list_normal
+        s._interface_list_array
+      ]
+    ))
+
+    (rule "_interface_list_normal" (
+      s:
+      seq [
+        s.nominal_type
+        (zero_or_more [
+          ","
+          s.nominal_type
+        ])
+      ]
+    ))
+
+    (rule "_interface_list_array" (
+      s:
+      seq [
+        "{"
+        (field "base_array_type" s._type)
+        "}"
+        (zero_or_more [
+          ","
+          s.nominal_type
+        ])
+      ]
+    ))
+
+    (rule "record_entries" (s: repeat1 s._record_entry))
+
+    (rule "_record_entry" (
+      s:
+      choice [
+        s.record_entry_userdata
+        s.record_entry_type
+        s.record_entry_record
+        s.record_entry_enum
+        s.record_entry_key
+        s.record_entry_metamethod_key
+      ]
+    ))
+
+    (rule "record_entry_userdata" (s: "userdata"))
+
+    (rule "record_entry_type" (
+      s:
+      seq [
+        "type"
+        (field "name" s.identifier)
+        "="
+        s._new_type
+      ]
+    ))
+
+    (rule "record_entry_enum" (
+      s:
+      seq [
+        "enum"
+        (field "name" s.identifier)
+        s._enum_body
+      ]
+    ))
+
+    (rule "record_entry_record" (
+      s:
+      seq [
+        "record"
+        (field "name" s.identifier)
+        s._record_body
+      ]
+    ))
+
+    (rule "record_entry_key" (
+      s:
+      seq [
+        s._record_key
+        ":"
+        (field "type" s._type)
+      ]
+    ))
+
+    (rule "record_entry_metamethod_key" (
+      s:
+      seq [
+        "metamethod"
+        s._record_key
+        ":"
+        (field "type" s._type)
+      ]
+    ))
+
+    (rule "_record_key" (
+      s:
+      choice [
+        (field "name" s.identifier)
+        (seq [
+          "["
+          (field "name" s.string)
+          "]"
+        ])
+      ]
+    ))
+
+    (rule "_enum_body" (
+      s:
+      seq [
+        (repeat s.string)
+        "end"
+      ]
+    ))
+
+    (rule "do_statement" (
+      s:
+      seq [
+        "do"
+        (field "block" s.block)
+        "end"
+      ]
+    ))
+
+    (rule "return_statement" (
+      s:
+      seq [
+        "return"
+        (alias s._expression_list (s "expression_list"))
+      ]
+    ))
+
+    (rule "goto_label" (
+      s:
+      seq [
+        "::"
+        (field "name" s.identifier)
+        "::"
+      ]
+    ))
+
+    (rule "goto_statement" (
+      s:
+      seq [
+        "goto"
+        (field "name" s.identifier)
+      ]
+    ))
+
+    (rule "break_statement" (s: "break"))
+
+    (rule "empty_statement" (s: ";"))
 
     (rule "_type" (
       s:
@@ -64,7 +355,7 @@ grammar {
     (rule "_basic_type" (
       s:
       choice [
-        s.simple_type
+        s.nominal_type
         s.array_type
         s.tuple_type
         s.map_type
@@ -76,32 +367,34 @@ grammar {
       s:
       PREC.union (seq [
         s._type
-        (repeat1 (prec.right 0 (seq [
-          "|"
-          s._type
-        ])))
+        (repeat1 (
+          prec.right 0 (seq [
+            "|"
+            s._type
+          ])
+        ))
       ])
     ))
 
-    (rule "simple_type" (
+    (rule "nominal_type" (
       s:
       prec.right 0 (seq [
-        s._simple_type
+        s._nominal_type
         (field "args" (optional s.type_args))
       ])
     ))
 
-    (rule "_simple_type" (
+    (rule "_nominal_type" (
       s:
       choice [
-        s._multi_simple_type
-        s._single_simple_type
+        s._multi_nominal_type
+        s._single_nominal_type
       ]
     ))
 
-    (rule "_single_simple_type" (s: field "name" s.identifier))
+    (rule "_single_nominal_type" (s: field "name" s.identifier))
 
-    (rule "_multi_simple_type" (
+    (rule "_multi_nominal_type" (
       s:
       prec.right 0 (seq [
         (field "parents" (
@@ -119,12 +412,12 @@ grammar {
       s:
       prec.right 0 (seq [
         (field "type" "function")
-        (field "generic" (optional s.type_generic))
-        (field "opening_parenthesis" "(")
+        (field "type_generic" (optional s.type_generic))
+        "("
         (field "parameter_types" (optional s.function_type_param_list))
-        (field "closing_parenthesis" ")")
+        ")"
         (may_appear [
-          (field "return_type_indicator" ":")
+          ":"
           (field "return_types" s.function_type_return_list)
         ])
       ])
@@ -299,16 +592,16 @@ grammar {
         (seq [
           (field "name" s.identifier)
           (field "is" "is")
-          (field "parent_type" s.type_generic_simple_type)
+          (field "parent_type" s.type_generic_nominal_type)
         ])
       ]
     ))
 
-    (rule "type_generic_simple_type" (s: s._simple_type))
+    (rule "type_generic_nominal_type" (s: s._nominal_type))
 
     (rule "_expression" (
       s:
-      choice [
+      prec.left 0 (choice [
         s.number
         s.boolean
         s.nil
@@ -319,8 +612,9 @@ grammar {
         s.table
         s.is_operation
         s.as_operation
+        s.function_expression
         s._prefix_expression
-      ]
+      ])
     ))
 
     (rule "_prefix_expression" (
@@ -341,6 +635,56 @@ grammar {
       ]
     ))
 
+    (rule "function_expression" (
+      s:
+      seq [
+        "function"
+        s._function_body
+      ]
+    ))
+
+    (rule "_function_body" (
+      s:
+      seq [
+        (field "type_generic" (optional s.type_generic))
+        "("
+        (field "parameters" (optional s.function_param_list))
+        ")"
+        (may_appear [
+          ":"
+          (field "returns" s.function_return_list)
+        ])
+        (field "body" (optional s.block))
+        "end"
+      ]
+    ))
+
+    (rule "function_return_list" (
+      s:
+      choice [
+        (seq [
+          s._type
+          (zero_or_more [
+            ","
+            s._type
+          ])
+          (may_appear [
+            ","
+            s.function_return_vararg
+          ])
+        ])
+        s.function_return_vararg
+      ]
+    ))
+
+    (rule "function_return_vararg" (
+      s:
+      seq [
+        s._type
+        "..."
+      ]
+    ))
+
     (rule "function_param_list" (
       s:
       choice [
@@ -357,13 +701,13 @@ grammar {
 
     (rule "_function_param_name_list" (
       s:
-      seq [
+      prec.right 0 (seq [
         s.function_param_name
         (zero_or_more [
           ","
           s.function_param_name
         ])
-      ]
+      ])
     ))
 
     (rule "function_param_vararg" (

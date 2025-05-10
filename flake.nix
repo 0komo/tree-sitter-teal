@@ -39,8 +39,8 @@
               sigi
               ccls
               nixfmt-rfc-style
-              nushell
               bear
+              just
             ];
           env = pkgs: {
             SIGI_HOME = "./.sigi";
