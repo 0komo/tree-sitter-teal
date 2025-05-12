@@ -54,7 +54,22 @@ grammar {
   conflicts = s: [
   ];
   rules = [
-    (rule "chunk" (s: optional s._block))
+    (rule "chunk" (
+      s:
+      seq [
+        (optional s.shebang)
+        (optional s._block)
+      ]
+    ))
+
+    (rule "shebang" (
+      s:
+      seq [
+        "#!"
+        (token.immediate (R ''\S+''))
+        (optional (token.immediate (R ''[^\n]+'')))
+      ]
+    ))
 
     (rule "block" (s: s._block))
     (rule "_block" (
@@ -77,12 +92,78 @@ grammar {
         s.goto_statement
         s.goto_label
         s.do_statement
+        s.function_statement
         s.global_type_statement
         s.global_record_statement
         s.global_enum_statement
+        s.global_macroexp_statement
+        s.global_function_statement
         s.local_type_statement
         s.local_record_statement
         s.local_enum_statement
+        s.local_macroexp_statement
+        s.local_function_statement
+      ]
+    ))
+
+    (rule "global_function_statement" (s: make_global s._function_statement))
+    (rule "local_function_statement" (s: make_local s._function_statement))
+
+    (rule "_function_statement" (
+      s:
+      seq [
+        "function"
+        (field "name" s.identifier)
+        s._function_body
+      ]
+    ))
+
+    (rule "function_statement" (
+      s:
+      seq [
+        "function"
+        s._function_name
+        s._function_body
+      ]
+    ))
+
+    (rule "_function_name" (
+      s:
+      choice [
+        (seq [
+          (field "parents" (seq [
+            s.identifier
+            (zero_or_more [
+              "."
+              s.identifier
+            ])
+          ]))
+          "."
+          (field "name" s.identifier)
+        ])
+        (seq [
+          (field "object" (seq [
+            s.identifier
+            (zero_or_more [
+              "."
+              s.identifier
+            ])
+          ]))
+          ":"
+          (field "method" s.identifier)
+        ])
+      ]
+    ))
+
+    (rule "global_macroexp_statement" (s: make_global s._macroexp_statement))
+    (rule "local_macroexp_statement" (s: make_local s._macroexp_statement))
+
+    (rule "_macroexp_statement" (
+      s:
+      seq [
+        "macroexp"
+        (field "name" s.identifier)
+        s._macroexp_body
       ]
     ))
 
@@ -263,6 +344,10 @@ grammar {
         s._record_key
         ":"
         (field "type" s._type)
+        (may_appear [
+          "="
+          (field "value" s.macroexp_expression)
+        ])
       ]
     ))
 
@@ -288,6 +373,32 @@ grammar {
       ]
     ))
 
+    (rule "macroexp_expression" (
+      s:
+      seq [
+        "macroexp"
+        s._macroexp_body
+      ]
+    ))
+
+    (rule "_macroexp_body" (
+      s:
+      seq [
+        (field "type_generic" (optional s.type_generic))
+        "("
+        (field "parameters" (optional (alias s.function_param_list (s "macroexp_param_list"))))
+        ")"
+        (may_appear [
+          ":"
+          (field "returns" (alias s.function_return_list (s "macroexp_return_list")))
+        ])
+        (field "body" (alias s.macroexp_block (s "block")))
+        "end"
+      ]
+    ))
+
+    (rule "macroexp_block" (s: s.return_statement))
+
     (rule "_enum_body" (
       s:
       seq [
@@ -309,7 +420,7 @@ grammar {
       s:
       seq [
         "return"
-        (alias s._expression_list (s "expression_list"))
+        (optional (alias s._expression_list (s "expression_list")))
       ]
     ))
 
